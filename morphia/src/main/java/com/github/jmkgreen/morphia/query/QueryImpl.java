@@ -402,7 +402,7 @@ public class QueryImpl<T> extends CriteriaContainerImpl implements Query<T>, Cri
 			throw new QueryException("order cannot be used on a snapshotted query.");
 		
 		//reset order
-		if (condition == null || condition.trim() == "")
+		if (condition == null || condition.trim().isEmpty())
 			sort = null;
 		
 		sort = parseFieldsString(condition, clazz, this.ds.getMapper(), this.validateName);

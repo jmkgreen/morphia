@@ -45,7 +45,7 @@ public class CollectionOfValuesTest extends TestBase {
 		Key<ContainsTwoDimensionalArray> savedKey = ds.save(entity);
 		ContainsTwoDimensionalArray loaded = ds.get(ContainsTwoDimensionalArray.class, savedKey.getId());
 		Assert.assertNotNull(loaded.twoDimArray);
-		Assert.assertEquals(test2DimBa, loaded.twoDimArray);
+		Assert.assertTrue(test2DimBa == loaded.twoDimArray);
 		Assert.assertNotNull(loaded.id);
 	}
 
