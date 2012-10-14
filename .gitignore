@@ -1,10 +1,12 @@
 # Generated Files #
 target/
+.settings/
 *.class
 
 .idea
 .classpath
 .project
+
 
 # Package Files #
 *.jar
