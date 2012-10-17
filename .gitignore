@@ -6,6 +6,7 @@ target/
 .idea
 .classpath
 .project
+*.iml
 
 
 # Package Files #
