@@ -139,6 +139,11 @@ public class TestMapper extends TestBase {
 		String text;
 	}
 
+	public static class ReferencesCustomId {
+		@Id String id;
+		@Reference UsesCustomIdObject child;
+	}
+
     /**
      * Should only load one instance of A.
      * Ensure {@link A#id A's id} is zero at start of each test
@@ -196,6 +201,24 @@ public class TestMapper extends TestBase {
 		ucio.id = cId;
 		ucio.text = "hllo";
 		ds.save(ucio);
+	}
+
+	@Test
+	public void ReferenceCustomId() throws Exception {
+		CustomId cId = new CustomId();
+		cId.id = new ObjectId();
+		cId.type = "banker";
+
+        UsesCustomIdObject objWithCustomId = new UsesCustomIdObject();
+        objWithCustomId.id = cId;
+        objWithCustomId.text = "hello world";
+
+		ReferencesCustomId obj = new ReferencesCustomId();
+		obj.id = "testId";
+        obj.child = objWithCustomId;
+
+		ds.save(objWithCustomId);
+		ds.save(obj);
 	}
 
 }
