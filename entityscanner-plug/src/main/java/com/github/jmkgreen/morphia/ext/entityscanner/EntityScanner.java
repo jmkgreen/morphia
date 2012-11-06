@@ -41,7 +41,7 @@ public class EntityScanner {
 		conf.setScanners(new TypesScanner(), new TypeAnnotationsScanner());
 		
 		final Set<URL> s = new HashSet<URL>();
-		s.addAll(ClasspathHelper.getUrlsForCurrentClasspath());
+		s.addAll(ClasspathHelper.forJavaClassPath());
 		s.addAll(Arrays.asList(ClasspathUrlFinder.findClassPaths()));
 		conf.setUrls(new ArrayList(s));
 		
