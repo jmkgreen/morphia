@@ -17,10 +17,6 @@
       <version>7</version>
     </parent>
 
-    <properties>
-        <morphia.version>1.0.1-SNAPSHOT</morphia.version>
-    </properties>
-
     <scm>
         <connection>scm:git:git@github.com:jmkgreen/morphia.git</connection>
         <developerConnection>scm:git:git@github.com:jmkgreen/morphia.git</developerConnection>

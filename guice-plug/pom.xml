@@ -4,12 +4,10 @@
 	<parent>
 		<artifactId>morphia-parent</artifactId>
 		<groupId>com.github.jmkgreen.morphia</groupId>
-		<version>1.2.1</version>
-		<relativePath>../</relativePath>
+        <version>1.2.2-SNAPSHOT</version>
 	</parent>
 	<groupId>com.github.jmkgreen.morphia</groupId>
 	<artifactId>morphia-guice-plug</artifactId>
-	<version>1.00</version>
 	<name>Guice Plugin</name>
 	<packaging>jar</packaging>
 	<dependencies>
@@ -17,7 +15,7 @@
 		<dependency>
 			<groupId>com.github.jmkgreen.morphia</groupId>
 			<artifactId>morphia</artifactId>
-			<version>${morphia.version}</version>
+            <version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

@@ -5,14 +5,12 @@
 		<groupId>com.github.jmkgreen.morphia</groupId>
 		<artifactId>morphia-parent</artifactId>
 		<version>1.2.2-SNAPSHOT</version>
-		<relativePath>../</relativePath>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.jmkgreen.morphia</groupId>
 	<artifactId>morphia</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.1-SNAPSHOT</version>
 	<name>morphia</name>
 
 	<dependencies>
