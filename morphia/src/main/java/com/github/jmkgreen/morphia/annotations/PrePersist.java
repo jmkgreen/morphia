@@ -9,9 +9,11 @@ import java.lang.annotation.Target;
 
 /**
  * Called before the data has been persisted to the datastore (before mapping is done).
+ *
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface PrePersist {

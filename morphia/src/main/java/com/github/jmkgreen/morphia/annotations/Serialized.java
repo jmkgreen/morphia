@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.jmkgreen.morphia.mapping.Mapper;
-
 /**
  * Marker for fields that should be (java) serialized
- * 
+ *
  * @author Scott Hernandez
  */
 @Documented
@@ -34,7 +33,15 @@ import com.github.jmkgreen.morphia.mapping.Mapper;
 @Target(ElementType.FIELD)
 public @interface Serialized {
 
-	boolean disableCompression() default false;
-	
-	String value() default Mapper.IGNORED_FIELDNAME;
+    /**
+     *
+     * @return
+     */
+    boolean disableCompression() default false;
+
+    /**
+     *
+     * @return
+     */
+    String value() default Mapper.IGNORED_FIELDNAME;
 }

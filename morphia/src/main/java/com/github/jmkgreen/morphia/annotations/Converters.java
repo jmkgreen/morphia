@@ -17,6 +17,7 @@
 
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.converters.TypeConverter;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,15 +25,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.jmkgreen.morphia.converters.TypeConverter;
-
 /**
  * Declares converters required for this entity/class; converters are registered globally at time of the meta-data discovery.
+ *
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Converters {
-	Class<? extends TypeConverter>[] value();
+    Class<? extends TypeConverter>[] value();
 }

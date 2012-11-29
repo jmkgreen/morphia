@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.github.jmkgreen.morphia.converters;
 
@@ -10,20 +10,22 @@ import com.github.jmkgreen.morphia.mapping.MappingException;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  * @author scotthernandez
  */
-@SuppressWarnings({"unchecked","rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class CharacterConverter extends TypeConverter implements SimpleValueConverter {
-	public CharacterConverter() { super(Character.class, char.class); }
-	
-	@Override
-	public Object decode(Class targetClass, Object fromDBObject, MappedField optionalExtraInfo) throws MappingException {
-		if (fromDBObject == null) return null;
+    public CharacterConverter() {
+        super(Character.class, char.class);
+    }
 
-		// TODO: Check length. Maybe "" should be null?
-		return fromDBObject.toString().charAt(0);
-	}
-	
-	@Override
-	public Object encode(Object value, MappedField optionalExtraInfo) {
-		return String.valueOf(value);
-	}
+    @Override
+    public Object decode(Class targetClass, Object fromDBObject, MappedField optionalExtraInfo) throws MappingException {
+        if (fromDBObject == null) return null;
+
+        // TODO: Check length. Maybe "" should be null?
+        return fromDBObject.toString().charAt(0);
+    }
+
+    @Override
+    public Object encode(Object value, MappedField optionalExtraInfo) {
+        return String.valueOf(value);
+    }
 }

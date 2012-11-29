@@ -16,31 +16,45 @@ import java.util.Set;
 /**
  * @author us@thomas-daily.de
  */
-public class ValidationExtension extends AbstractEntityInterceptor
-{
+public class ValidationExtension extends AbstractEntityInterceptor {
+    /**
+     *
+     */
     private ValidatorFactory validationFactory;
-    private Mapper mapper;
+    //private Mapper mapper;
 
+    /**
+     *
+     */
     @Deprecated
-    public ValidationExtension()
-    {
+    public ValidationExtension() {
         // use the new ValidationExtension(morphia) convention
     }
 
-    public ValidationExtension(final Morphia m)
-    {
-        final Configuration<?> configuration = Validation.byDefaultProvider().configure();
+    /**
+     *
+     * @param m
+     */
+    public ValidationExtension(final Morphia m) {
+        final Configuration<?> configuration =
+                Validation.byDefaultProvider().configure();
         this.validationFactory = configuration.buildValidatorFactory();
 
         m.getMapper().addInterceptor(this);
     }
 
+    /**
+     *
+     * @param ent
+     * @param dbObj
+     * @param mapr
+     */
     @Override
-    public void prePersist(final Object ent, final DBObject dbObj, final Mapper mapr)
-    {
-        final Set validate = this.validationFactory.getValidator().validate(ent);
-        if (!validate.isEmpty())
-        {
+    public void prePersist(final Object ent,
+                           final DBObject dbObj, final Mapper mapr) {
+        final Set validate =
+                this.validationFactory.getValidator().validate(ent);
+        if (!validate.isEmpty()) {
             throw new VerboseJSR303ConstraintViolationException(validate);
         }
     }

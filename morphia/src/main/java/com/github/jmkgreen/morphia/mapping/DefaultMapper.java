@@ -13,7 +13,18 @@ package com.github.jmkgreen.morphia.mapping;
 
 import com.github.jmkgreen.morphia.EntityInterceptor;
 import com.github.jmkgreen.morphia.Key;
-import com.github.jmkgreen.morphia.annotations.*;
+import com.github.jmkgreen.morphia.annotations.Converters;
+import com.github.jmkgreen.morphia.annotations.Embedded;
+import com.github.jmkgreen.morphia.annotations.Entity;
+import com.github.jmkgreen.morphia.annotations.Id;
+import com.github.jmkgreen.morphia.annotations.NotSaved;
+import com.github.jmkgreen.morphia.annotations.PostLoad;
+import com.github.jmkgreen.morphia.annotations.PreLoad;
+import com.github.jmkgreen.morphia.annotations.PrePersist;
+import com.github.jmkgreen.morphia.annotations.PreSave;
+import com.github.jmkgreen.morphia.annotations.Property;
+import com.github.jmkgreen.morphia.annotations.Reference;
+import com.github.jmkgreen.morphia.annotations.Serialized;
 import com.github.jmkgreen.morphia.converters.DefaultConverters;
 import com.github.jmkgreen.morphia.converters.TypeConverter;
 import com.github.jmkgreen.morphia.logging.Logr;
@@ -32,16 +43,22 @@ import com.github.jmkgreen.morphia.utils.ReflectionUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
-import org.bson.BSONEncoder;
-import org.bson.BasicBSONEncoder;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
+import org.bson.BSONEncoder;
+import org.bson.BasicBSONEncoder;
 
 /**
  * <p>This is the heart of Morphia and takes care of mapping from/to POJOs/DBObjects<p>

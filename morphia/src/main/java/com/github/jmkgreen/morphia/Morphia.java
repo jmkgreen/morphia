@@ -25,16 +25,15 @@ import com.github.jmkgreen.morphia.mapping.cache.EntityCache;
 import com.github.jmkgreen.morphia.utils.ReflectionUtils;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
 /**
  * <p>The main project class. Uses a {@link Mapper} to map between annotated POJO entities and MongoDB.</p>
- *
+ * <p/>
  * <p>There are two primary ways to use Morphia:</p>
- *
+ * <p/>
  * <ol>
  * <li>Your client can manage the MongoDB connection and queries itself, using
  * Morphia only to transform entity instances into MongoDB types and
@@ -170,7 +169,7 @@ public class Morphia {
 
     /**
      * Map from a DBObject using an existing EntityCache.
-     *
+     * <p/>
      * If the entityClass does not an interface and is not already mapped,
      * a MappingException will be thrown.
      *
@@ -195,9 +194,9 @@ public class Morphia {
     /**
      * Proxy to Mapper.toDBObject(Object)
      *
-     * @see Mapper#toDBObject(Object)
      * @param entity To be converted
      * @return New DBObject
+     * @see Mapper#toDBObject(Object)
      */
     public DBObject toDBObject(Object entity) {
         try {

@@ -3,18 +3,21 @@ package com.mongodb;
 import java.io.Serializable;
 
 public class DBRef implements Serializable {
-	private static final long serialVersionUID = 1010362449129647598L;
+    private static final long serialVersionUID = 1010362449129647598L;
     Serializable _id = null;
     String _ns;
     Serializable _db = null;
 
-    protected DBRef() {}
+    protected DBRef() {
+    }
 
     public DBRef(Serializable db, String coll, Serializable id) {
-    	_db = db; _ns = coll; _id = id;
+        _db = db;
+        _ns = coll;
+        _id = id;
     }
-    
-    
+
+
     public Serializable getId() {
         return _id;
     }

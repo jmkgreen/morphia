@@ -3,14 +3,12 @@
  */
 package com.github.jmkgreen.morphia.converters;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bson.LazyBSONList;
-
 import com.github.jmkgreen.morphia.mapping.MappedField;
 import com.github.jmkgreen.morphia.mapping.MappingException;
 import com.github.jmkgreen.morphia.utils.ReflectionUtils;
+import java.util.ArrayList;
+import java.util.List;
+import org.bson.LazyBSONList;
 
 /**
  * @author Uwe Schaefer, (us@thomas-daily.de)

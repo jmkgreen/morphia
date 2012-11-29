@@ -31,7 +31,8 @@ import java.lang.annotation.Target;
  *
  * @author Olafur Gauti Gudmundsson
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Polymorphic {

@@ -16,17 +16,20 @@
 
 package com.github.jmkgreen.morphia.query;
 
-/** Error during validation. 
- *  @author ScottHernandez */
+/**
+ * Error during validation.
+ *
+ * @author ScottHernandez
+ */
 public class ValidationException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public ValidationException( String message ) {
-            super(message);
+    public ValidationException(String message) {
+        super(message);
     }
 
-    public ValidationException( String message, Throwable cause ) {
-            super(message, cause);
+    public ValidationException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

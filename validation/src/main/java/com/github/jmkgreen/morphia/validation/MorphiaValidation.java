@@ -1,12 +1,11 @@
 /**
- * 
+ *
  */
 package com.github.jmkgreen.morphia.validation;
 
-@Deprecated
 /**
  * @deprecated renamed to ValidationExtension
  */
-public class MorphiaValidation extends ValidationExtension
-{
+@Deprecated
+public class MorphiaValidation extends ValidationExtension {
 }

@@ -17,6 +17,7 @@
 
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,27 +25,29 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.jmkgreen.morphia.mapping.Mapper;
-
 /**
  * Allows marking and naming the collectionName
+ *
  * @author Olafur Gauti Gudmundsson
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Entity {
-	String value() default Mapper.IGNORED_FIELDNAME;
-	CappedAt cap() default @CappedAt(0);
-	//@Deprecated //to be replaced. This is a temp hack until polymorphism and discriminators are impl'd
-	boolean noClassnameStored() default false;
-	
-	//set slaveOk for queries for this Entity.
-	boolean queryNonPrimary() default false;
-	
-	
-	//any WriteConcern static string. Case insensitive. STRICT/SAFE, NORMAL, etc...
-	String concern() default "";
+    String value() default Mapper.IGNORED_FIELDNAME;
+
+    CappedAt cap() default @CappedAt(0);
+
+    //@Deprecated //to be replaced. This is a temp hack until polymorphism and discriminators are impl'd
+    boolean noClassnameStored() default false;
+
+    //set slaveOk for queries for this Entity.
+    boolean queryNonPrimary() default false;
+
+
+    //any WriteConcern static string. Case insensitive. STRICT/SAFE, NORMAL, etc...
+    String concern() default "";
 
 }

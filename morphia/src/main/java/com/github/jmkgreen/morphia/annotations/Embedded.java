@@ -16,6 +16,7 @@
 
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -23,14 +24,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.jmkgreen.morphia.mapping.Mapper;
-
 /**
- *
  * @author Olafur Gauti Gudmundsson
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
 public @interface Embedded {
@@ -43,6 +42,8 @@ public @interface Embedded {
      */
     String value() default Mapper.IGNORED_FIELDNAME;
 
-    /** Specify the concrete class to instantiate. */
+    /**
+     * Specify the concrete class to instantiate.
+     */
     Class<?> concreteClass() default Object.class;
 }

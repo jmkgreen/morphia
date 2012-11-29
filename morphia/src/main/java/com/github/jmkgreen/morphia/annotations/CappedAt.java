@@ -22,13 +22,18 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Properties for capped collections; used in {@link Entity}
- * 
+ *
  * @author Scott Hernandez
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CappedAt {
-	/** size to cap at (defaults to 1MB) */
-	long value() default 1024*1024;
-	/** count of items to cap at (defaults to unlimited) */
-	long count() default 0;
+    /**
+     * size to cap at (defaults to 1MB)
+     */
+    long value() default 1024 * 1024;
+
+    /**
+     * count of items to cap at (defaults to unlimited)
+     */
+    long count() default 0;
 }

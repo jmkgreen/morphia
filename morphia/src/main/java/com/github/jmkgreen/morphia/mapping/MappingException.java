@@ -17,18 +17,17 @@
 package com.github.jmkgreen.morphia.mapping;
 
 /**
- *
  * @author Olafur Gauti Gudmundsson
  */
 public class MappingException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public MappingException( String message ) {
-            super(message);
+    public MappingException(String message) {
+        super(message);
     }
 
-    public MappingException( String message, Throwable cause ) {
-            super(message, cause);
+    public MappingException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

@@ -4,9 +4,9 @@ import com.github.jmkgreen.morphia.logging.Logr;
 import com.github.jmkgreen.morphia.logging.LogrFactory;
 
 public class JDKLoggerFactory implements LogrFactory {
-	
-	public Logr get(Class<?> c) {
-		return new JDKLogger(c);
-	}
-	
+
+    public Logr get(Class<?> c) {
+        return new JDKLogger(c);
+    }
+
 }

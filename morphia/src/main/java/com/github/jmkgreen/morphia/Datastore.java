@@ -6,67 +6,74 @@ import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.github.jmkgreen.morphia.utils.IndexDirection;
 import com.github.jmkgreen.morphia.utils.IndexFieldDef;
-import com.mongodb.*;
-
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBDecoderFactory;
+import com.mongodb.DBRef;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.Mongo;
+import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Datastore interface to get/delete/save objects
+ * Datastore interface to get/delete/save objects.
  *
  * @author Scott Hernandez
  */
 public interface Datastore {
     /**
-     * Creates a (type-safe) reference to the entity; if stored this will become a {@link DBRef}
+     * Creates a (type-safe) reference to the entity;
+     * if stored this will become a {@link DBRef}.
      */
     <T> Key<T> getKey(T entity);
 
     /**
-     * Does a query to check if the keyOrEntity exists in mongodb
+     * Does a query to check if the keyOrEntity exists in mongodb.
      */
     Key<?> exists(Object keyOrEntity);
 
     /**
-     * Deletes the given entity (by id)
+     * Deletes the given entity (by id).
      */
     <T, V> WriteResult delete(Class<T> clazz, V id);
 
     /**
-     * Deletes the given entities (by id)
+     * Deletes the given entities (by id).
      */
     <T, V> WriteResult delete(Class<T> clazz, Iterable<V> ids);
 
     /**
-     * Deletes the given entities based on the query
+     * Deletes the given entities based on the query.
      */
     <T> WriteResult delete(Query<T> q);
 
     /**
-     * Deletes the given entities based on the query, with the WriteConcern
+     * Deletes the given entities based on the query, with the WriteConcern.
      *
      * @return A WriteResult
      */
     <T> WriteResult delete(Query<T> q, WriteConcern wc);
 
     /**
-     * Deletes the given entity (by @Id)
+     * Deletes the given entity (by @Id).
      */
     <T> WriteResult delete(T entity);
 
     /**
-     * Deletes the given entity (by @Id), with the WriteConcern
+     * Deletes the given entity (by @Id), with the WriteConcern.
      */
     <T> WriteResult delete(T entity, WriteConcern wc);
 
     /**
-     * Find all instances by type
+     * Find all instances by type.
      */
     <T> Query<T> find(Class<T> clazz);
 
 
     /**
-     * Find all instances by type
+     * Find all instances by type.
      */
     <T> Query<T> find(String kind, Class<T> clazz);
 
@@ -263,95 +270,139 @@ public interface Datastore {
      * @param scopeFields Each map entry will be a global variable in all the functions; can be null
      * @return counts and stuff
      */
-    <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q, String map, String reduce, String finalize, Map<String, Object> scopeFields, Class<T> outputType);
+    <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q,
+                                      String map, String reduce,
+                                      String finalize,
+                                      Map<String, Object> scopeFields,
+                                      Class<T> outputType);
 
     /**
-     * Runs a map/reduce job at the server; this should be used with a server version 1.7.4 or higher
+     * Runs a map/reduce job at the server; this should be
+     * used with a server version 1.7.4 or higher.
      *
      * @param <T>         The type of resulting data
      * @param type        MapreduceType
-     * @param q           The query (only the criteria, limit and sort will be used)
+     * @param q           The query (only the criteria,
+     *                    limit and sort will be used)
      * @param outputType  The type of resulting data; inline is not working yet
      * @param baseCommand The base command to fill in and send to the server
      * @return counts and stuff
      */
-    <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q, Class<T> outputType, MapReduceCommand baseCommand);
+    <T> MapreduceResults<T> mapReduce(MapreduceType type,
+                                      Query q,
+                                      Class<T> outputType,
+                                      MapReduceCommand baseCommand);
 
     /**
-     * The builder for all update operations
+     * The builder for all update operations.
      */
     <T> UpdateOperations<T> createUpdateOperations(Class<T> kind);
 
     /**
-     * Returns a new query bound to the kind (a specific {@link DBCollection})
+     * Returns a new query bound to the kind (a specific {@link DBCollection}).
      */
     <T> Query<T> createQuery(Class<T> kind);
 
     /**
-     * Returns a new query based on the example object
+     * Returns a new query based on the example object.
      */
     <T> Query<T> queryByExample(T example);
 
     /**
-     * Ensures (creating if necessary) the index and direction
+     * Ensures (creating if necessary) the index and direction.
      */
     <T> void ensureIndex(Class<T> clazz, String field, IndexDirection dir);
 
     /**
-     * Ensures (creating if necessary) the index including the field(s) + directions
+     * Ensures (creating if necessary) the index including
+     * the field(s) + directions.
      */
     @Deprecated
     <T> void ensureIndex(Class<T> clazz, IndexFieldDef... fields);
 
     /**
-     * Ensures (creating if necessary) the index including the field(s) + directions
+     * Ensures (creating if necessary) the index including
+     * the field(s) + directions.
      */
     @Deprecated
-    <T> void ensureIndex(Class<T> clazz, String name, IndexFieldDef[] fields, boolean unique, boolean dropDupsOnCreate);
+    <T> void ensureIndex(Class<T> clazz, String name,
+                         IndexFieldDef[] fields, boolean unique,
+                         boolean dropDupsOnCreate);
 
     /**
-     * Ensures (creating if necessary) the index including the field(s) + directions; eg fields = "field1, -field2" ({field1:1, field2:-1})
+     * Ensures (creating if necessary) the index including the
+     * field(s) + directions; eg fields = "field1, -field2"
+     * ({field1:1, field2:-1}).
      */
     <T> void ensureIndex(Class<T> clazz, String fields);
 
     /**
-     * Ensures (creating if necessary) the index including the field(s) + directions; eg fields = "field1, -field2" ({field1:1, field2:-1})
+     * Ensures (creating if necessary) the index including the
+     * field(s) + directions; eg fields = "field1, -field2"
+     * ({field1:1, field2:-1}).
      */
-    <T> void ensureIndex(Class<T> clazz, String name, String fields, boolean unique, boolean dropDupsOnCreate);
+    <T> void ensureIndex(Class<T> clazz, String name, String fields,
+                         boolean unique, boolean dropDupsOnCreate);
 
     /**
-     * Ensures (creating if necessary) the indexes found during class mapping (using {@code @Indexed, @Indexes)}
+     * Ensures (creating if necessary) the indexes found
+     * during class mapping (using {@code @Indexed, @Indexes)}.
      */
     void ensureIndexes();
 
     /**
-     * Ensures (creating if necessary) the indexes found during class mapping (using {@code @Indexed, @Indexes)}, possibly in the background
+     * Ensures (creating if necessary) the indexes found during class
+     * mapping (using {@code @Indexed, @Indexes)},
+     * possibly in the background.
      */
     void ensureIndexes(boolean background);
 
     /**
-     * Ensures (creating if necessary) the indexes found during class mapping (using {@code @Indexed, @Indexes)}
+     * Ensures (creating if necessary) the indexes found during
+     * class mapping (using {@code @Indexed, @Indexes)}.
      */
     <T> void ensureIndexes(Class<T> clazz);
 
     /**
-     * Ensures (creating if necessary) the indexes found during class mapping (using {@code @Indexed, @Indexes)}, possibly in the background
+     * Ensures (creating if necessary) the indexes found during class
+     * mapping (using {@code @Indexed, @Indexes)},
+     * possibly in the background.
      */
     <T> void ensureIndexes(Class<T> clazz, boolean background);
 
     /**
-     * ensure capped DBCollections for {@code Entity}(s)
+     * ensure capped DBCollections for {@code Entity}(s).
      */
     void ensureCaps();
 
+    /**
+     *
+     * @return
+     */
     DB getDB();
 
+    /**
+     *
+     * @return
+     */
     Mongo getMongo();
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     DBCollection getCollection(Class<?> c);
 
+    /**
+     *
+     * @return
+     */
     WriteConcern getDefaultWriteConcern();
 
+    /**
+     *
+     * @param wc
+     */
     void setDefaultWriteConcern(WriteConcern wc);
-
 }

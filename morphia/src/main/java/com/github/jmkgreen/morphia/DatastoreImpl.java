@@ -1,6 +1,15 @@
 package com.github.jmkgreen.morphia;
 
-import com.github.jmkgreen.morphia.annotations.*;
+import com.github.jmkgreen.morphia.annotations.CappedAt;
+import com.github.jmkgreen.morphia.annotations.Entity;
+import com.github.jmkgreen.morphia.annotations.Index;
+import com.github.jmkgreen.morphia.annotations.Indexed;
+import com.github.jmkgreen.morphia.annotations.Indexes;
+import com.github.jmkgreen.morphia.annotations.NotSaved;
+import com.github.jmkgreen.morphia.annotations.PostPersist;
+import com.github.jmkgreen.morphia.annotations.Reference;
+import com.github.jmkgreen.morphia.annotations.Serialized;
+import com.github.jmkgreen.morphia.annotations.Version;
 import com.github.jmkgreen.morphia.logging.Logr;
 import com.github.jmkgreen.morphia.logging.MorphiaLoggerFactory;
 import com.github.jmkgreen.morphia.mapping.MappedClass;
@@ -10,32 +19,86 @@ import com.github.jmkgreen.morphia.mapping.MappingException;
 import com.github.jmkgreen.morphia.mapping.cache.EntityCache;
 import com.github.jmkgreen.morphia.mapping.lazy.DatastoreHolder;
 import com.github.jmkgreen.morphia.mapping.lazy.proxy.ProxyHelper;
-import com.github.jmkgreen.morphia.query.*;
+import com.github.jmkgreen.morphia.query.Query;
+import com.github.jmkgreen.morphia.query.QueryException;
+import com.github.jmkgreen.morphia.query.QueryImpl;
+import com.github.jmkgreen.morphia.query.UpdateException;
+import com.github.jmkgreen.morphia.query.UpdateOperations;
+import com.github.jmkgreen.morphia.query.UpdateOpsImpl;
+import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.github.jmkgreen.morphia.utils.Assert;
 import com.github.jmkgreen.morphia.utils.IndexDirection;
 import com.github.jmkgreen.morphia.utils.IndexFieldDef;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.CommandResult;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBDecoderFactory;
+import com.mongodb.DBObject;
+import com.mongodb.DBRef;
+import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
-
+import com.mongodb.MapReduceOutput;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * A generic (type-safe) wrapper around mongodb collections
+ * A generic (type-safe) wrapper around mongodb collections.
  *
  * @author Scott Hernandez
  */
 @SuppressWarnings({"unchecked", "deprecation"})
 public class DatastoreImpl implements Datastore, AdvancedDatastore {
+    /**
+     *
+     */
     private static final Logr log = MorphiaLoggerFactory.get(DatastoreImpl.class);
 
     //	final protected Morphia morphia;
+    /**
+     *
+     */
     protected Mapper mapr;
+
+    /**
+     *
+     */
     protected Mongo mongo;
+
+    /**
+     *
+     */
     protected DB db;
+
+    /**
+     *
+     */
     protected WriteConcern defConcern = WriteConcern.SAFE;
+
+    /**
+     *
+     */
     protected DBDecoderFactory decoderFactory = null;
 
+    /**
+     *
+     * @param mapr
+     * @param mongo
+     * @param dbName
+     */
     public DatastoreImpl(Mapper mapr, Mongo mongo, String dbName) {
         this.mapr = mapr;
         this.mongo = mongo;
@@ -45,10 +108,23 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         DatastoreHolder.getInstance().set(this);
     }
 
+    /**
+     *
+     * @param morphia
+     * @param mongo
+     */
     public DatastoreImpl(Morphia morphia, Mongo mongo) {
         this(morphia, mongo, null);
     }
 
+    /**
+     *
+     * @param morphia
+     * @param mongo
+     * @param dbName
+     * @param username
+     * @param password
+     */
     public DatastoreImpl(Morphia morphia, Mongo mongo, String dbName, String username, char[] password) {
         this(morphia.getMapper(), mongo, dbName);
 
@@ -59,21 +135,45 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     }
 
+    /**
+     *
+     * @param morphia
+     * @param mongo
+     * @param dbName
+     */
     public DatastoreImpl(Morphia morphia, Mongo mongo, String dbName) {
         this(morphia.getMapper(), mongo, dbName);
     }
 
+    /**
+     *
+     * @param db
+     * @return
+     */
     public Datastore copy(String db) {
         return new DatastoreImpl(mapr, mongo, db);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param id
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> DBRef createRef(Class<T> clazz, V id) {
         if (id == null)
             throw new MappingException("Could not get id for " + clazz.getName());
         return new DBRef(getDB(), getCollection(clazz).getName(), id);
     }
 
-
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> DBRef createRef(T entity) {
         entity = ProxyHelper.unwrap(entity);
         Object id = getId(entity);
@@ -82,16 +182,34 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return createRef(entity.getClass(), id);
     }
 
+    /**
+     *
+     * @param entity
+     * @return
+     */
     @Deprecated
     protected Object getId(Object entity) {
         return mapr.getId(entity);
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     @Deprecated // use mapper instead.
     public <T> Key<T> getKey(T entity) {
         return mapr.getKey(entity);
     }
 
+    /**
+     *
+     * @param kind
+     * @param id
+     * @param <T>
+     * @return
+     */
     public <T> WriteResult delete(String kind, T id) {
         DBCollection dbColl = getCollection(kind);
         WriteResult wr = dbColl.remove(BasicDBObjectBuilder.start().add(Mapper.ID_KEY, id).get());
@@ -99,27 +217,74 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wr;
     }
 
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param id
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> WriteResult delete(String kind, Class<T> clazz, V id) {
         return delete(find(kind, clazz).filter(Mapper.ID_KEY, id));
     }
 
+    /**
+     *
+     * @param clazz
+     * @param id
+     * @param wc
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> WriteResult delete(Class<T> clazz, V id, WriteConcern wc) {
         return delete(createQuery(clazz).filter(Mapper.ID_KEY, id), wc);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param id
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> WriteResult delete(Class<T> clazz, V id) {
         return delete(clazz, id, getWriteConcern(clazz));
     }
 
+    /**
+     *
+     * @param clazz
+     * @param ids
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> WriteResult delete(Class<T> clazz, Iterable<V> ids) {
         Query<T> q = find(clazz).disableValidation().filter(Mapper.ID_KEY + " in", ids);
         return delete(q);
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> WriteResult delete(T entity) {
         return delete(entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> WriteResult delete(T entity, WriteConcern wc) {
         entity = ProxyHelper.unwrap(entity);
         if (entity instanceof Class<?>)
@@ -133,10 +298,23 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
+    /**
+     *
+     * @param query
+     * @param <T>
+     * @return
+     */
     public <T> WriteResult delete(Query<T> query) {
         return delete(query, getWriteConcern(query.getEntityClass()));
     }
 
+    /**
+     *
+     * @param query
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> WriteResult delete(Query<T> query, WriteConcern wc) {
         QueryImpl<T> q = (QueryImpl<T>) query;
 
@@ -165,22 +343,67 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wr;
     }
 
+    /**
+     *
+     * @param type
+     * @param fields
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> type, String fields) {
         ensureIndex(type, null, fields, false, false);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param name
+     * @param defs
+     * @param unique
+     * @param dropDupsOnCreate
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> clazz, String name, IndexFieldDef[] defs, boolean unique, boolean dropDupsOnCreate) {
         ensureIndex(clazz, name, defs, unique, dropDupsOnCreate, false);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param name
+     * @param fields
+     * @param unique
+     * @param dropDupsOnCreate
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> clazz, String name, String fields, boolean unique, boolean dropDupsOnCreate) {
         ensureIndex(clazz, name, QueryImpl.parseFieldsString(fields, clazz, mapr, true), unique, dropDupsOnCreate, false, false);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param name
+     * @param fields
+     * @param unique
+     * @param dropDupsOnCreate
+     * @param background
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> clazz, String name, String fields, boolean unique, boolean dropDupsOnCreate, boolean background) {
         ensureIndex(clazz, name, QueryImpl.parseFieldsString(fields, clazz, mapr, true), unique, dropDupsOnCreate, background, false);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param name
+     * @param fields
+     * @param unique
+     * @param dropDupsOnCreate
+     * @param background
+     * @param sparse
+     * @param <T>
+     */
     protected <T> void ensureIndex(Class<T> clazz, String name, BasicDBObject fields, boolean unique, boolean dropDupsOnCreate, boolean background, boolean sparse) {
         BasicDBObjectBuilder keyOpts = new BasicDBObjectBuilder();
         if (name != null && name.length() > 0) {
@@ -209,6 +432,15 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
+    /**
+     *
+     * @param clazz
+     * @param name
+     * @param defs
+     * @param unique
+     * @param dropDupsOnCreate
+     * @param background
+     */
     @SuppressWarnings({"rawtypes"})
     public void ensureIndex(Class clazz, String name, IndexFieldDef[] defs, boolean unique, boolean dropDupsOnCreate, boolean background) {
         BasicDBObjectBuilder keys = BasicDBObjectBuilder.start();
@@ -222,22 +454,54 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         ensureIndex(clazz, name, (BasicDBObject) keys.get(), unique, dropDupsOnCreate, background, false);
     }
 
+    /**
+     *
+     * @param type
+     * @param name
+     * @param dir
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> type, String name, IndexDirection dir) {
         ensureIndex(type, new IndexFieldDef(name, dir));
     }
 
+    /**
+     *
+     * @param type
+     * @param fields
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> type, IndexFieldDef... fields) {
         ensureIndex(type, null, fields, false, false);
     }
 
+    /**
+     *
+     * @param type
+     * @param background
+     * @param fields
+     * @param <T>
+     */
     public <T> void ensureIndex(Class<T> type, boolean background, IndexFieldDef... fields) {
         ensureIndex(type, null, fields, false, false, background);
     }
 
+    /**
+     *
+     * @param mc
+     * @param background
+     */
     protected void ensureIndexes(MappedClass mc, boolean background) {
         ensureIndexes(mc, background, new ArrayList<MappedClass>(), new ArrayList<MappedField>());
     }
 
+    /**
+     *
+     * @param mc
+     * @param background
+     * @param parentMCs
+     * @param parentMFs
+     */
     protected void ensureIndexes(MappedClass mc, boolean background, ArrayList<MappedClass> parentMCs, ArrayList<MappedField> parentMFs) {
         if (parentMCs.contains(mc))
             return;
@@ -282,19 +546,37 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
+    /**
+     *
+     * @param clazz
+     * @param <T>
+     */
     public <T> void ensureIndexes(Class<T> clazz) {
         ensureIndexes(clazz, false);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param background
+     * @param <T>
+     */
     public <T> void ensureIndexes(Class<T> clazz, boolean background) {
         MappedClass mc = mapr.getMappedClass(clazz);
         ensureIndexes(mc, background);
     }
 
+    /**
+     *
+     */
     public void ensureIndexes() {
         ensureIndexes(false);
     }
 
+    /**
+     *
+     * @param background
+     */
     public void ensureIndexes(boolean background) {
         // loops over mappedClasses and call ensureIndex for each @Entity object
         // (for now)
@@ -303,7 +585,9 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
-
+    /**
+     *
+     */
     public void ensureCaps() {
         for (MappedClass mc : mapr.getMappedClasses())
             if (mc.getEntityAnnotation() != null && mc.getEntityAnnotation().cap().value() > 0) {
@@ -331,56 +615,148 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
             }
     }
 
+    /**
+     *
+     * @param ex
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> queryByExample(T ex) {
         return queryByExample(getCollection(ex), ex);
     }
 
+    /**
+     *
+     * @param kind
+     * @param ex
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> queryByExample(String kind, T ex) {
         return queryByExample(db.getCollection(kind), ex);
     }
 
+    /**
+     *
+     * @param coll
+     * @param example
+     * @param <T>
+     * @return
+     */
     private <T> Query<T> queryByExample(DBCollection coll, T example) {
         //TODO: think about remove className from baseQuery param below.
         return new QueryImpl<T>((Class<T>) example.getClass(), coll, this, entityToDBObj(example, new HashMap<Object, DBObject>()));
 
     }
 
+    /**
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> createQuery(Class<T> clazz) {
         return new QueryImpl<T>(clazz, getCollection(clazz), this);
     }
 
+    /**
+     *
+     * @param kind
+     * @param q
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> createQuery(Class<T> kind, DBObject q) {
         return new QueryImpl<T>(kind, getCollection(kind), this, q);
     }
 
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param q
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> createQuery(String kind, Class<T> clazz, DBObject q) {
         return new QueryImpl<T>(clazz, db.getCollection(kind), this, q);
     }
 
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> createQuery(String kind, Class<T> clazz) {
         return new QueryImpl<T>(clazz, db.getCollection(kind), this);
     }
 
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> find(String kind, Class<T> clazz) {
         return new QueryImpl<T>(clazz, getCollection(kind), this);
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> Query<T> find(Class<T> clazz) {
         return createQuery(clazz);
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param property
+     * @param value
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> Query<T> find(Class<T> clazz, String property, V value) {
         Query<T> query = createQuery(clazz);
         return query.filter(property, value);
     }
 
-
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param property
+     * @param value
+     * @param offset
+     * @param size
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> Query<T> find(String kind, Class<T> clazz, String property, V value, int offset, int size) {
         return find(kind, clazz, property, value, offset, size, true);
     }
 
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param property
+     * @param value
+     * @param offset
+     * @param size
+     * @param validate
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> Query<T> find(String kind, Class<T> clazz, String property, V value, int offset, int size,
                                 boolean validate) {
         Query<T> query = find(kind, clazz);
@@ -391,7 +767,17 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return query.filter(property, value).enableValidation();
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param property
+     * @param value
+     * @param offset
+     * @param size
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> Query<T> find(Class<T> clazz, String property, V value, int offset, int size) {
         Query<T> query = createQuery(clazz);
         query.offset(offset);
@@ -399,18 +785,31 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return query.filter(property, value);
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param ref
+     * @param <T>
+     * @return
+     */
     public <T> T get(Class<T> clazz, DBRef ref) {
         return (T) mapr.fromDBObject(clazz, ref.fetch(), createCache());
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param ids
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> Query<T> get(Class<T> clazz, Iterable<V> ids) {
         return find(clazz).disableValidation().filter(Mapper.ID_KEY + " in", ids).enableValidation();
     }
 
     /**
-     * Queries the server to check for each DBRef
+     * Queries the server to check for each DBRef.
      */
     public <T> List<Key<T>> getKeysByRefs(List<DBRef> refs) {
         ArrayList<Key<T>> tempKeys = new ArrayList<Key<T>>(refs.size());
@@ -442,10 +841,23 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return keys;
     }
 
+    /**
+     *
+     * @param keys
+     * @param <T>
+     * @return
+     */
     public <T> List<T> getByKeys(Iterable<Key<T>> keys) {
         return this.getByKeys((Class<T>) null, keys);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param keys
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     public <T> List<T> getByKeys(Class<T> clazz, Iterable<Key<T>> keys) {
 
@@ -480,7 +892,15 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return entities;
     }
 
-
+    /**
+     *
+     * @param kind
+     * @param clazz
+     * @param id
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> T get(String kind, Class<T> clazz, V id) {
         List<T> results = find(kind, clazz, Mapper.ID_KEY, id, 0, 1).asList();
         if (results == null || results.size() == 0)
@@ -488,12 +908,25 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return results.get(0);
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param id
+     * @param <T>
+     * @param <V>
+     * @return
+     */
     public <T, V> T get(Class<T> clazz, V id) {
         return find(getCollection(clazz).getName(), clazz, Mapper.ID_KEY, id, 0, 1, true).get();
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param key
+     * @param <T>
+     * @return
+     */
     public <T> T getByKey(Class<T> clazz, Key<T> key) {
         String kind = mapr.getCollectionName(clazz);
         String keyKind = mapr.updateKind(key);
@@ -503,6 +936,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return get(clazz, key.getId());
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> T get(T entity) {
         entity = ProxyHelper.unwrap(entity);
         Object id = getId(entity);
@@ -511,6 +950,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return (T) get(entity.getClass(), id);
     }
 
+    /**
+     *
+     * @param entityOrKey
+     * @return
+     */
     public Key<?> exists(Object entityOrKey) {
         entityOrKey = ProxyHelper.unwrap(entityOrKey);
         Key<?> key = getKey(entityOrKey);
@@ -525,6 +969,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return find(collName, key.getKindClass()).filter(Mapper.ID_KEY, key.getId()).getKey();
     }
 
+    /**
+     *
+     * @param clazz
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     public DBCollection getCollection(Class clazz) {
         String collName = mapr.getCollectionName(clazz);
@@ -532,72 +981,147 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return dbC;
     }
 
+    /**
+     *
+     * @param obj
+     * @return
+     */
     public DBCollection getCollection(Object obj) {
         if (obj == null) return null;
         return getCollection(obj.getClass());
     }
 
+    /**
+     *
+     * @param kind
+     * @return
+     */
     protected DBCollection getCollection(String kind) {
         if (kind == null) return null;
         return getDB().getCollection(kind);
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> long getCount(T entity) {
         entity = ProxyHelper.unwrap(entity);
         return getCollection(entity).count();
     }
 
-
+    /**
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> long getCount(Class<T> clazz) {
         return getCollection(clazz).count();
     }
 
-
+    /**
+     *
+     * @param kind
+     * @return
+     */
     public long getCount(String kind) {
         return getCollection(kind).count();
     }
 
-
+    /**
+     *
+     * @param query
+     * @param <T>
+     * @return
+     */
     public <T> long getCount(Query<T> query) {
         return query.countAll();
     }
 
-
+    /**
+     *
+     * @return
+     */
     public Mongo getMongo() {
         return this.mongo;
     }
 
-
+    /**
+     *
+     * @return
+     */
     public DB getDB() {
         return db;
     }
 
+    /**
+     *
+     * @return
+     */
     public Mapper getMapper() {
         return mapr;
     }
 
+    /**
+     *
+     * @param entities
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> insert(Iterable<T> entities) {
         //TODO: try not to create two iterators...
         Object first = entities.iterator().next();
         return insert(entities, getWriteConcern(first));
     }
 
+    /**
+     *
+     * @param kind
+     * @param entities
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> insert(String kind, Iterable<T> entities, WriteConcern wc) {
         DBCollection dbColl = db.getCollection(kind);
         return insert(dbColl, entities, wc);
     }
 
+    /**
+     *
+     * @param kind
+     * @param entities
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> insert(String kind, Iterable<T> entities) {
         return insert(kind, entities, getWriteConcern(entities.iterator().next()));
     }
 
-
+    /**
+     *
+     * @param entities
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> insert(Iterable<T> entities, WriteConcern wc) {
         //TODO: Do this without creating another iterator
         DBCollection dbColl = getCollection(entities.iterator().next());
         return insert(dbColl, entities, wc);
     }
 
+    /**
+     *
+     * @param dbColl
+     * @param entities
+     * @param wc
+     * @param <T>
+     * @return
+     */
     private <T> Iterable<Key<T>> insert(DBCollection dbColl, Iterable<T> entities, WriteConcern wc) {
         ArrayList<DBObject> ents = entities instanceof List ? new ArrayList<DBObject>(((List<T>) entities).size()) : new ArrayList<DBObject>();
 
@@ -629,32 +1153,74 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return savedKeys;
     }
 
+    /**
+     *
+     * @param entities
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> insert(T... entities) {
         return insert(Arrays.asList(entities), getWriteConcern(entities[0]));
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> insert(T entity) {
         return insert(entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> insert(T entity, WriteConcern wc) {
         entity = ProxyHelper.unwrap(entity);
         DBCollection dbColl = getCollection(entity);
         return insert(dbColl, entity, wc);
     }
 
+    /**
+     *
+     * @param kind
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> insert(String kind, T entity) {
         entity = ProxyHelper.unwrap(entity);
         DBCollection dbColl = getCollection(kind);
         return insert(dbColl, entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param kind
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> insert(String kind, T entity, WriteConcern wc) {
         entity = ProxyHelper.unwrap(entity);
         DBCollection dbColl = getCollection(kind);
         return insert(dbColl, entity, wc);
     }
 
+    /**
+     *
+     * @param dbColl
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     protected <T> Key<T> insert(DBCollection dbColl, T entity, WriteConcern wc) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = entityToDBObj(entity, involvedObjects);
@@ -670,6 +1236,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     }
 
+    /**
+     *
+     * @param entity
+     * @param involvedObjects
+     * @return
+     */
     protected DBObject entityToDBObj(Object entity, Map<Object, DBObject> involvedObjects) {
         entity = ProxyHelper.unwrap(entity);
         DBObject dbObj = mapr.toDBObject(entity, involvedObjects);
@@ -677,7 +1249,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     /**
-     * call postSaveOperations and returns Key for entity
+     * call postSaveOperations and returns Key for entity.
      */
     protected <T> Key<T> postSaveGetKey(T entity, DBObject dbObj, DBCollection dbColl, Map<Object, DBObject> involvedObjects) {
         if (dbObj.get(Mapper.ID_KEY) == null)
@@ -690,6 +1262,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return key;
     }
 
+    /**
+     *
+     * @param entities
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> save(Iterable<T> entities) {
         Object first = null;
         try {
@@ -700,6 +1278,13 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return save(entities, getWriteConcern(first));
     }
 
+    /**
+     *
+     * @param entities
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> save(Iterable<T> entities, WriteConcern wc) {
         ArrayList<Key<T>> savedKeys = new ArrayList<Key<T>>();
         for (T ent : entities)
@@ -708,6 +1293,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     }
 
+    /**
+     *
+     * @param entities
+     * @param <T>
+     * @return
+     */
     public <T> Iterable<Key<T>> save(T... entities) {
         ArrayList<Key<T>> savedKeys = new ArrayList<Key<T>>();
         for (T ent : entities)
@@ -715,6 +1306,14 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return savedKeys;
     }
 
+    /**
+     *
+     * @param dbColl
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     protected <T> Key<T> save(DBCollection dbColl, T entity, WriteConcern wc) {
         MappedClass mc = mapr.getMappedClass(entity);
         if (mc.getAnnotation(NotSaved.class) != null)
@@ -739,6 +1338,17 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return postSaveGetKey(entity, dbObj, dbColl, involvedObjects);
     }
 
+    /**
+     *
+     * @param dbColl
+     * @param entity
+     * @param dbObj
+     * @param wc
+     * @param db
+     * @param mc
+     * @param <T>
+     * @return
+     */
     protected <T> WriteResult tryVersionedUpdate(DBCollection dbColl, T entity, DBObject dbObj, WriteConcern wc, DB db, MappedClass mc) {
         WriteResult wr = null;
         if (mc.getFieldsAnnotatedWith(Version.class).isEmpty())
@@ -774,6 +1384,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wr;
     }
 
+    /**
+     *
+     * @param wc
+     * @param wr
+     */
     protected void throwOnError(WriteConcern wc, WriteResult wr) {
         if (wc == null && wr.getLastConcern() == null) {
             CommandResult cr = wr.getLastError();
@@ -782,40 +1397,97 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
+    /**
+     *
+     * @param kind
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> save(String kind, T entity) {
         entity = ProxyHelper.unwrap(entity);
         DBCollection dbColl = getCollection(kind);
         return save(dbColl, entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> save(T entity) {
         return save(entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> save(T entity, WriteConcern wc) {
         entity = ProxyHelper.unwrap(entity);
         DBCollection dbColl = getCollection(entity);
         return save(dbColl, entity, wc);
     }
 
+    /**
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     public <T> UpdateOperations<T> createUpdateOperations(Class<T> clazz) {
         return new UpdateOpsImpl<T>(clazz, getMapper());
     }
 
+    /**
+     *
+     * @param kind
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> UpdateOperations<T> createUpdateOperations(Class<T> kind, DBObject ops) {
         UpdateOpsImpl<T> upOps = (UpdateOpsImpl<T>) createUpdateOperations(kind);
         upOps.setOps(ops);
         return upOps;
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> update(Query<T> query, UpdateOperations<T> ops, boolean createIfMissing) {
         return update(query, ops, createIfMissing, getWriteConcern(query.getEntityClass()));
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> update(Query<T> query, UpdateOperations<T> ops, boolean createIfMissing, WriteConcern wc) {
         return update(query, ops, createIfMissing, true, wc);
     }
 
+    /**
+     *
+     * @param ent
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> update(T ent, UpdateOperations<T> ops) {
         if (ent instanceof Query)
             return update((Query<T>) ent, ops);
@@ -834,6 +1506,13 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return update(q, ops);
     }
 
+    /**
+     *
+     * @param key
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> update(Key<T> key, UpdateOperations<T> ops) {
         Class<T> clazz = (Class<T>) key.getKindClass();
         if (clazz == null)
@@ -841,24 +1520,62 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return updateFirst(createQuery(clazz).disableValidation().filter(Mapper.ID_KEY, key.getId()), ops);
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> update(Query<T> query, UpdateOperations<T> ops) {
         return update(query, ops, false, true);
     }
 
-
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> updateFirst(Query<T> query, UpdateOperations<T> ops) {
         return update(query, ops, false, false);
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> updateFirst(Query<T> query, UpdateOperations<T> ops, boolean createIfMissing) {
         return update(query, ops, createIfMissing, getWriteConcern(query.getEntityClass()));
 
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> updateFirst(Query<T> query, UpdateOperations<T> ops, boolean createIfMissing, WriteConcern wc) {
         return update(query, ops, createIfMissing, false, wc);
     }
 
+    /**
+     *
+     * @param query
+     * @param entity
+     * @param createIfMissing
+     * @param <T>
+     * @return
+     */
     public <T> UpdateResults<T> updateFirst(Query<T> query, T entity, boolean createIfMissing) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = mapr.toDBObject(entity, involvedObjects);
@@ -874,10 +1591,23 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return res;
     }
 
+    /**
+     *
+     * @param entity
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> merge(T entity) {
         return merge(entity, getWriteConcern(entity));
     }
 
+    /**
+     *
+     * @param entity
+     * @param wc
+     * @param <T>
+     * @return
+     */
     public <T> Key<T> merge(T entity, WriteConcern wc) {
         LinkedHashMap<Object, DBObject> involvedObjects = new LinkedHashMap<Object, DBObject>();
         DBObject dbObj = mapr.toDBObject(entity, involvedObjects);
@@ -916,6 +1646,13 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return key;
     }
 
+    /**
+     *
+     * @param entity
+     * @param dbObj
+     * @param involvedObjects
+     * @param <T>
+     */
     private <T> void postSaveOperations(Object entity, DBObject dbObj, Map<Object, DBObject> involvedObjects) {
         mapr.updateKeyInfo(entity, dbObj, createCache());
 
@@ -928,6 +1665,16 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         }
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param multi
+     * @param wc
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     private <T> UpdateResults<T> update(Query<T> query, UpdateOperations ops, boolean createIfMissing, boolean multi, WriteConcern wc) {
         DBObject u = ((UpdateOpsImpl) ops).getOps();
@@ -939,11 +1686,30 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return update(query, u, createIfMissing, multi, wc);
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param createIfMissing
+     * @param multi
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     private <T> UpdateResults<T> update(Query<T> query, UpdateOperations ops, boolean createIfMissing, boolean multi) {
         return update(query, ops, createIfMissing, multi, getWriteConcern(query.getEntityClass()));
     }
 
+    /**
+     *
+     * @param query
+     * @param u
+     * @param createIfMissing
+     * @param multi
+     * @param wc
+     * @param <T>
+     * @return
+     */
     private <T> UpdateResults<T> update(Query<T> query, DBObject u, boolean createIfMissing, boolean multi, WriteConcern wc) {
         QueryImpl<T> qi = (QueryImpl<T>) query;
 
@@ -977,6 +1743,12 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return new UpdateResults<T>(wr);
     }
 
+    /**
+     *
+     * @param query
+     * @param <T>
+     * @return
+     */
     public <T> T findAndDelete(Query<T> query) {
         DBCollection dbColl = ((QueryImpl<T>) query).getCollection();
         //TODO remove this after testing.
@@ -999,14 +1771,38 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return null;
     }
 
+    /**
+     *
+     * @param q
+     * @param ops
+     * @param <T>
+     * @return
+     */
     public <T> T findAndModify(Query<T> q, UpdateOperations<T> ops) {
         return findAndModify(q, ops, false);
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param oldVersion indicated the old version of the Entity should be returned
+     * @param <T>
+     * @return
+     */
     public <T> T findAndModify(Query<T> query, UpdateOperations<T> ops, boolean oldVersion) {
         return findAndModify(query, ops, oldVersion, false);
     }
 
+    /**
+     *
+     * @param query
+     * @param ops
+     * @param oldVersion      indicated the old version of the Entity should be returned
+     * @param createIfMissing if the query returns no results, then a new object will be created (sets upsert=true)
+     * @param <T>
+     * @return
+     */
     public <T> T findAndModify(Query<T> query, UpdateOperations<T> ops, boolean oldVersion, boolean createIfMissing) {
         QueryImpl<T> qi = (QueryImpl<T>) query;
 
@@ -1036,6 +1832,15 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
             return (T) mapr.fromDBObject(qi.getEntityClass(), res, createCache());
     }
 
+    /**
+     *
+     * @param type        MapreduceType
+     * @param q           The query (only the criteria, limit and sort will be used)
+     * @param outputType  The type of resulting data; inline is not working yet
+     * @param baseCommand The base command to fill in and send to the server
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     public <T> MapreduceResults<T> mapReduce(MapreduceType type, Query q, Class<T> outputType, MapReduceCommand baseCommand) {
 
@@ -1096,6 +1901,18 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
     }
 
+    /**
+     *
+     * @param type
+     * @param query
+     * @param map
+     * @param reduce
+     * @param finalize
+     * @param scopeFields
+     * @param outputType
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     public <T> MapreduceResults<T> mapReduce(MapreduceType type, Query query, String map, String reduce, String finalize, Map<String, Object> scopeFields, Class<T> outputType) {
 
@@ -1137,7 +1954,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     /**
-     * Converts a list of keys to refs
+     * Converts a list of keys to refs.
      */
     public static <T> List<DBRef> keysAsRefs(List<Key<T>> keys, Mapper mapr) {
         ArrayList<DBRef> refs = new ArrayList<DBRef>(keys.size());
@@ -1147,7 +1964,7 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
     }
 
     /**
-     * Converts a list of refs to keys
+     * Converts a list of refs to keys.
      */
     public static <T> List<Key<T>> refsToKeys(Mapper mapr, List<DBRef> refs, Class<T> c) {
         ArrayList<Key<T>> keys = new ArrayList<Key<T>>(refs.size());
@@ -1157,12 +1974,16 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return keys;
     }
 
+    /**
+     *
+     * @return
+     */
     private EntityCache createCache() {
         return mapr.createEntityCache();
     }
 
     /**
-     * Gets the write concern for entity or returns the default write concern for this datastore
+     * Gets the write concern for entity or returns the default write concern for this datastore.
      */
     public WriteConcern getWriteConcern(Object clazzOrEntity) {
         WriteConcern wc = defConcern;
@@ -1175,18 +1996,35 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         return wc;
     }
 
+    /**
+     *
+     * @return
+     */
     public WriteConcern getDefaultWriteConcern() {
         return defConcern;
     }
 
+    /**
+     *
+     * @param wc
+     */
     public void setDefaultWriteConcern(WriteConcern wc) {
         defConcern = wc;
     }
 
+    /**
+     *
+     * @param fact
+     * @return
+     */
     public DBDecoderFactory setDecoderFact(DBDecoderFactory fact) {
         return decoderFactory = fact;
     }
 
+    /**
+     *
+     * @return
+     */
     public DBDecoderFactory getDecoderFact() {
         return decoderFactory != null ? decoderFactory : mongo.getMongoOptions().dbDecoderFactory;
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.github.jmkgreen.morphia.converters;
 
@@ -7,13 +7,13 @@ package com.github.jmkgreen.morphia.converters;
  * @author Uwe Schaefer, (us@thomas-daily.de)
  */
 public class ConverterNotFoundException extends RuntimeException {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
-	public ConverterNotFoundException(final String msg) {
-		super(msg);
-	}
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    public ConverterNotFoundException(final String msg) {
+        super(msg);
+    }
 }

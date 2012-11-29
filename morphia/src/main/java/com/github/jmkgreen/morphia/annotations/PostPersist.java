@@ -9,9 +9,11 @@ import java.lang.annotation.Target;
 
 /**
  * Called after the data has been persisted from the java object.
+ *
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface PostPersist {

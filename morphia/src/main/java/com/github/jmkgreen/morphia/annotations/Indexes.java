@@ -26,11 +26,13 @@ import java.lang.annotation.Target;
 
 /**
  * Defines indexes for this entity type (on the collection)
+ *
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Indexes {
-	Index[] value();
+    Index[] value();
 }

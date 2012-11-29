@@ -1,17 +1,16 @@
 /**
- * 
+ *
  */
 package com.github.jmkgreen.morphia.mapping.lazy.proxy;
 
 /**
  * @author Uwe Schäfer, (schaefer@thomas-daily.de)
- * 
  */
 @SuppressWarnings("unchecked")
 public interface ProxiedReference {
-	boolean __isFetched();
+    boolean __isFetched();
 
-	Class __getReferenceObjClass();
+    Class __getReferenceObjClass();
 
-	Object __unwrap();
+    Object __unwrap();
 }

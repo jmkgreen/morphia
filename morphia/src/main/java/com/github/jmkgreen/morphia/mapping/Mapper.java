@@ -6,14 +6,13 @@ import com.github.jmkgreen.morphia.converters.DefaultConverters;
 import com.github.jmkgreen.morphia.mapping.cache.EntityCache;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
-
 import java.util.Collection;
 import java.util.Map;
 
 /**
  * Maps POJOs and MongoDB DBObjects. Holds a list of {@link EntityInterceptor}s
  * that are invoked during lifecycle phases across all mapped entity classes.
- *
+ * <p/>
  * Implementations should be thread-safe.
  */
 public interface Mapper {

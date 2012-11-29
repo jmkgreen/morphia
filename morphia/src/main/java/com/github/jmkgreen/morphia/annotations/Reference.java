@@ -16,6 +16,7 @@
 
 package com.github.jmkgreen.morphia.annotations;
 
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -23,11 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.jmkgreen.morphia.mapping.Mapper;
-
 /**
  * Identifies that a field should be mapped to MongoDB DBRef.
- *
+ * <p/>
  * <p>
  * If your field's value is a a document that could be
  * stored in more than one collection, DBRef is a solution.
@@ -39,7 +38,7 @@ import com.github.jmkgreen.morphia.mapping.Mapper;
  * A manual link is simply a field that holds a reference to another
  * entity document that your own application creates and maintains.
  * </p>
- *
+ * <p/>
  * <p>
  * The _id of the referenced document must be a type that the
  * mongo-java-driver natively supports within it's BasicBSONEncoder
@@ -49,7 +48,8 @@ import com.github.jmkgreen.morphia.mapping.Mapper;
  * @author Olafur Gauti Gudmundsson
  * @author Scott Hernandez
  */
-@Documented @Inherited
+@Documented
+@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Reference {
@@ -60,11 +60,19 @@ public @interface Reference {
      * @return the name of the Mongo value storing the field value
      */
     String value() default Mapper.IGNORED_FIELDNAME;
-    /** Specify the concrete class to instantiate. */
+
+    /**
+     * Specify the concrete class to instantiate.
+     */
     Class<?> concreteClass() default Object.class;
-    /** Ignore any reference that don't resolve (aren't in mongodb) */
+
+    /**
+     * Ignore any reference that don't resolve (aren't in mongodb)
+     */
     boolean ignoreMissing() default false;
 
-    /** Create a proxy around the reference which will be resolved on the first method call. */
+    /**
+     * Create a proxy around the reference which will be resolved on the first method call.
+     */
     boolean lazy() default false;
 }
