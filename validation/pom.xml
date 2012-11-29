@@ -14,39 +14,27 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
-		<!--  automatically looses the optional dependencies -->
 		<dependency>
 			<groupId>com.github.jmkgreen.morphia</groupId>
 			<artifactId>morphia</artifactId>
-            <version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
-			<version>1.0.0.GA</version>
 		</dependency>
 
-		<!-- you could choose any JSR303 implementor you want. -->
+		<!-- You could choose any JSR303 implementor you want. -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>4.1.0.Final</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			 <version>1.5.6</version>
-			<optional>true</optional>
 		</dependency>
 
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>jboss</id>
-			<url>https://repository.jboss.org/nexus/content/repositories/public/</url>
-		</repository>
-	</repositories>
 </project>

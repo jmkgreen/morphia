@@ -3,6 +3,8 @@ target/
 .settings/
 *.class
 entityscanner-plug/dependency-reduced-pom.xml
+.DS_Store
+morphia/.DS_Store
 
 .idea
 .classpath

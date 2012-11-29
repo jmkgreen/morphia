@@ -1,21 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<artifactId>morphia-parent</artifactId>
 		<groupId>com.github.jmkgreen.morphia</groupId>
         <version>1.2.2-SNAPSHOT</version>
 	</parent>
+
 	<groupId>com.github.jmkgreen.morphia</groupId>
-	<artifactId>morphia-entityscanner-plug</artifactId>
+	<artifactId>morphia-entityscanner-plugin</artifactId>
 	<name>EntityScanner Plugin</name>
 	<packaging>jar</packaging>
+
 	<dependencies>
-		<!-- automatically looses the optional dependencies -->
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
-			<version>0.9.8</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>servlet-api</artifactId>
@@ -35,15 +36,15 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.google.collections</groupId>
-			<artifactId>google-collections</artifactId>
-			<version>1.0</version>
-		</dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
 		<dependency>
 			<groupId>net.sf.scannotation</groupId>
 			<artifactId>scannotation</artifactId>
-			<version>1.0.2</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>javassist</artifactId>
@@ -51,24 +52,23 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>1.5.6</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.jmkgreen.morphia</groupId>
 			<artifactId>morphia</artifactId>
-            <version>${project.version}</version>
 		</dependency>
-
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-shade-plugin</artifactId>
-                <version>2.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
