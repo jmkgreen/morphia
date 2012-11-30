@@ -56,6 +56,7 @@ public class BasicDAO<T, K> implements DAO<T, K> {
     }
 
     protected BasicDAO(Datastore ds) {
+        this.ds = ds;
         initType(((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]));
     }
 
