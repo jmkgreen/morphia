@@ -5,7 +5,7 @@
 
     <groupId>com.github.jmkgreen.morphia</groupId>
     <artifactId>morphia-parent</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Morphia Build</name>
@@ -28,7 +28,7 @@
     <scm>
         <connection>scm:git:git@github.com:jmkgreen/morphia.git</connection>
         <developerConnection>scm:git:git@github.com:jmkgreen/morphia.git</developerConnection>
-        <url>git@github.com:jmkgreen/morphia.git</url>
+        <url>https://github.com/jmkgreen/morphia</url>
     </scm>
 
     <licenses>
@@ -224,6 +224,14 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
@@ -272,35 +280,39 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
                 <configuration>
                     <message>Creating site for ${project.version}</message>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
             </plugin>
+
             <plugin>
                 <groupId>com.github.github</groupId>
                 <artifactId>downloads-maven-plugin</artifactId>
-                <configuration>
-                    <description>${project.version} release of ${project.name}</description>
-                    <override>true</override>
-                    <includeAttached>true</includeAttached>
-                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                        <configuration>
+                            <description>${project.version} release of ${project.name}</description>
+                            <override>true</override>
+                            <includeAttached>true</includeAttached>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-
-        <extensions>
-            <extension>
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.12</version>
-            </extension>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ftp</artifactId>
-                <version>2.3</version>
-            </extension>
-        </extensions>
 
         <pluginManagement>
             <plugins>
