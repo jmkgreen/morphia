@@ -91,12 +91,14 @@
                 <groupId>com.thoughtworks.proxytoys</groupId>
                 <artifactId>proxytoys</artifactId>
                 <version>${proxytoys.version}</version>
+                <optional>true</optional>
             </dependency>
 
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib-nodep</artifactId>
                 <version>${cglib-nodep.version}</version>
+                <optional>true</optional>
             </dependency>
 
             <dependency>
