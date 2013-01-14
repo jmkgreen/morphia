@@ -578,7 +578,9 @@ public class DefaultMapper implements Mapper {
         else if (Embedded.class.equals(annType)) {
             opts.embeddedMapper.toDBObject(entity, mf, dbObject, involvedObjects, this);
         } else {
-            log.debug("No annotation was found, using default mapper " + opts.defaultMapper + " for " + mf);
+            if (log.isDebugEnabled()) {
+                log.debug("No annotation was found, using default mapper {} for {}", opts.defaultMapper, mf);
+            }
             opts.defaultMapper.toDBObject(entity, mf, dbObject, involvedObjects, this);
         }
 
