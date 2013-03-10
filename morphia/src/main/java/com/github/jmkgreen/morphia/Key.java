@@ -114,7 +114,7 @@ public class Key<T> implements Serializable, Comparable<Key<?>> {
      *
      * @param k
      */
-    private void checkState(Key k) {
+    private void checkState(Key<?> k) {
         if (k.kindClass == null && k.kind == null)
             throw new IllegalStateException("Kind must be specified (or a class).");
         if (k.id == null && k.idBytes == null)
@@ -131,7 +131,6 @@ public class Key<T> implements Serializable, Comparable<Key<?>> {
      * <li>id or name</li>
      * </ol>
      */
-    @SuppressWarnings("unchecked")
     public int compareTo(Key<?> other) {
         checkState(this);
         checkState(other);
@@ -213,7 +212,7 @@ public class Key<T> implements Serializable, Comparable<Key<?>> {
      * @param o2
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static int compareNullable(Comparable o1, Comparable o2) {
         if (o1 == null && o2 == null)
             return 0;

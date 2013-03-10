@@ -1,6 +1,11 @@
 package com.github.jmkgreen.morphia.mapping;
 
 import com.github.jmkgreen.morphia.ObjectFactory;
+import com.github.jmkgreen.morphia.converters.DefaultConverters;
+import com.github.jmkgreen.morphia.mapping.lazy.DatastoreProvider;
+import com.github.jmkgreen.morphia.mapping.lazy.DefaultDatastoreProvider;
+import com.github.jmkgreen.morphia.mapping.lazy.LazyFeatureDependencies;
+import com.github.jmkgreen.morphia.mapping.lazy.LazyProxyFactory;
 
 /**
  * Options to control mapping behavior.
@@ -31,4 +36,8 @@ public class MapperOptions {
     public CustomMapper defaultMapper = embeddedMapper;
 
     public ObjectFactory objectFactory = new DefaultCreator();
+    public LazyProxyFactory proxyFactory = LazyFeatureDependencies.createDefaultProxyFactory();
+    public DatastoreProvider datastoreProvider = new DefaultDatastoreProvider();
+    public DefaultConverters converters = new DefaultConverters();
+
 }

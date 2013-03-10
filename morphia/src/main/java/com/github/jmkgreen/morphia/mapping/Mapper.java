@@ -7,6 +7,7 @@ import com.github.jmkgreen.morphia.mapping.cache.EntityCache;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Map;
 
 /**
@@ -15,6 +16,7 @@ import java.util.Map;
  * <p/>
  * Implementations should be thread-safe.
  */
+@SuppressWarnings("rawtypes")
 public interface Mapper {
     /**
      * The @{@link com.github.jmkgreen.morphia.annotations.Id} field name that is stored with mongodb.
@@ -77,4 +79,11 @@ public interface Mapper {
     String updateKind(Key key);
 
     Class<?> getClassFromKind(String kind);
+    
+    boolean isCached(Class<?> clazz);
+    
+    void cacheClass(Class<?> clazz, Object instance) throws ConcurrentModificationException;
+    
+    Object getCachedClass(Class<?> clazz);
+    
 }

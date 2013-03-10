@@ -12,7 +12,7 @@ import com.github.jmkgreen.morphia.query.QueryImpl;
 import com.mongodb.DBObject;
 import java.util.Iterator;
 
-@SuppressWarnings({"unused", "unchecked", "rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes"})
 @NotSaved
 public class MapreduceResults<T> implements Iterable<T> {
     DBObject rawResults = null;

@@ -19,6 +19,7 @@ import com.github.jmkgreen.morphia.Key;
 import com.github.jmkgreen.morphia.annotations.Embedded;
 import com.github.jmkgreen.morphia.annotations.Entity;
 import com.github.jmkgreen.morphia.mapping.MappingException;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
@@ -182,7 +183,7 @@ public class ReflectionUtils {
 
         return isPrimitiveLike(type) || (type == DBRef.class) || (type == Pattern.class) ||
                 (type == CodeWScope.class) || (type == ObjectId.class) || (type == Key.class) ||
-                (type == DBObject.class) || (type == BasicDBObject.class);
+                (type == DBObject.class) || (type == BasicDBObject.class) || (type == BasicDBList.class);
     }
 
     public static boolean isPrimitiveLike(final Class type) {
