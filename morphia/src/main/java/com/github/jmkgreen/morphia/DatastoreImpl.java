@@ -863,16 +863,16 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
 
         Map<String, List<Key>> kindMap = new HashMap<String, List<Key>>();
         List<T> entities = new ArrayList<T>();
-        // String clazzKind = (clazz==null) ? null :
-        // getMapper().getCollectionName(clazz);
+        String clazzKind = (clazz==null) ? null :
+                getMapper().getCollectionName(clazz);
         for (Key<?> key : keys) {
             mapr.updateKind(key);
 
-            // if (clazzKind != null && !key.getKind().equals(clazzKind))
-            // throw new IllegalArgumentException("Types are not equal (" +
-            // clazz + "!=" + key.getKindClass() +
-            // ") for key and method parameter clazz");
-            //
+            if (clazzKind != null && !key.getKind().equals(clazzKind))
+            throw new IllegalArgumentException("Types are not equal (" +
+            clazz + "!=" + key.getKindClass() +
+            ") for key and method parameter clazz");
+
             if (kindMap.containsKey(key.getKind()))
                 kindMap.get(key.getKind()).add(key);
             else
@@ -881,10 +881,11 @@ public class DatastoreImpl implements Datastore, AdvancedDatastore {
         for (String kind : kindMap.keySet()) {
             List<Object> objIds = new ArrayList<Object>();
             List<Key> kindKeys = kindMap.get(kind);
+            Class<T> kindClass = clazz==null?kindKeys.get(0).getKindClass():clazz;
             for (Key key : kindKeys) {
                 objIds.add(key.getId());
             }
-            List kindResults = find(kind, null).disableValidation().filter("_id in", objIds).asList();
+            List kindResults = find(kind, kindClass).disableValidation().filter("_id in", objIds).asList();
             entities.addAll(kindResults);
         }
 
