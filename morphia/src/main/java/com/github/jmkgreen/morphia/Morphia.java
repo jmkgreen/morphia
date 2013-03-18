@@ -214,7 +214,7 @@ public class Morphia {
      * This will create a new Mongo instance; it is best to use a Mongo singleton instance
      */
     @Deprecated
-    public Datastore createDatastore(String dbName) {
+    public AdvancedDatastore createDatastore(String dbName) {
         return createDatastore(dbName, null, null);
     }
 
@@ -222,7 +222,7 @@ public class Morphia {
      * This will create a new Mongo instance; it is best to use a Mongo singleton instance
      */
     @Deprecated
-    public Datastore createDatastore(String dbName, String user, char[] pw) {
+    public AdvancedDatastore createDatastore(String dbName, String user, char[] pw) {
         try {
             return createDatastore(new Mongo(), dbName, user, pw);
         } catch (Exception e) {
@@ -233,14 +233,14 @@ public class Morphia {
     /**
      * It is best to use a Mongo singleton instance here
      */
-    public Datastore createDatastore(Mongo mon, String dbName, String user, char[] pw) {
+    public AdvancedDatastore createDatastore(Mongo mon, String dbName, String user, char[] pw) {
         return new DatastoreImpl(this, mon, dbName, user, pw);
     }
 
     /**
      * It is best to use a Mongo singleton instance here
      */
-    public Datastore createDatastore(Mongo mongo, String dbName) {
+    public AdvancedDatastore createDatastore(Mongo mongo, String dbName) {
         return createDatastore(mongo, dbName, null, null);
     }
 
