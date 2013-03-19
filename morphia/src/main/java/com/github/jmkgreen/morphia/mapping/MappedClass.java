@@ -342,6 +342,11 @@ public class MappedClass {
         return this.getClazz().equals(clazz);
     }
 
+    @Override
+    public int hashCode() {
+        return this.getClazz().hashCode();
+    }
+
     /**
      * Call the lifecycle methods on the
      */
