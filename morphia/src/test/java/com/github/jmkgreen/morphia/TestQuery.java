@@ -24,13 +24,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bson.types.CodeWScope;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.jmkgreen.morphia.TestDatastore.FacebookUser;
@@ -107,6 +110,7 @@ public class TestQuery  extends TestBase {
         @Reference(lazy=true)
 		Pic lazyPic;
     }
+
     @Entity
     public static class Pic {
         @Id ObjectId id;
@@ -487,7 +491,35 @@ public class TestQuery  extends TestBase {
         //		assertNotNull(pwkScottSarah);
         PhotoWithKeywords pwkBad = ds.find(PhotoWithKeywords.class).field("keywords").hasThisElement(new Keyword("Randy")).get();
         assertNull(pwkBad);
+    }
 
+    @Test
+    public void testInQuery() throws Exception {
+        Photo photo = new Photo();
+        photo.keywords = new ArrayList<String>();
+        photo.keywords.add("red");
+        photo.keywords.add("blue");
+        photo.keywords.add("green");
+        ds.save(photo);
+
+        Set<String> keywords = new HashSet<String>();
+        keywords.add("red");
+        keywords.add("yellow");
+        Photo photoFound = ds.find(Photo.class).field("keywords").in(keywords).get();
+        assertNotNull(photoFound);
+    }
+
+    @Test @Ignore
+    public void testInQueryWithObjects() throws Exception {
+        PhotoWithKeywords pwk1 = new PhotoWithKeywords();
+        PhotoWithKeywords pwk2 = new PhotoWithKeywords("Scott","Joe","Sarah");
+        ds.save(pwk1, pwk2);
+
+        Set<Keyword> keywords = new HashSet<Keyword>();
+        keywords.add(new Keyword("Scott"));
+        keywords.add(new Keyword("Randy"));
+        PhotoWithKeywords pwkFound = ds.find(PhotoWithKeywords.class).field("keywords").in(keywords).get();
+        assertNotNull(pwkFound);
     }
 
     @Test
