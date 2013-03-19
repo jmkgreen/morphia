@@ -25,6 +25,15 @@ To use, add Morphia to your Java SE or EE project alongside the mongo-java-drive
 	</tr>
 </table>
 
+You can paste the following into your pom.xml:
+```
+<dependency>
+    <groupId>com.github.jmkgreen.morphia</groupId>
+    <artifactId>morphia</artifactId>
+    <version>1.2.2</version>
+</dependency>
+```
+
 ### Documentation
 
 The [wiki](https://github.com/jmkgreen/morphia/wiki) has quite a lot of good example code.
