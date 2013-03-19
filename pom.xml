@@ -57,7 +57,7 @@
     </developers>
 
     <properties>
-        <mongo-java-driver.version>2.10.1</mongo-java-driver.version>
+        <mongo-java-driver.version>2.11.0</mongo-java-driver.version>
         <proxytoys.version>1.0</proxytoys.version>
         <cglib-nodep.version>2.2.2</cglib-nodep.version>
         <slf4j.version>1.7.2</slf4j.version>

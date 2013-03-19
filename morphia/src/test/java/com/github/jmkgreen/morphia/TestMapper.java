@@ -208,22 +208,27 @@ public class TestMapper extends TestBase {
      * Fix me. Referenced id field may need marshaling.
      * @throws Exception
      */
-	@Test @Ignore
+	@Test
 	public void ReferenceCustomId() throws Exception {
 		CustomId cId = new CustomId();
 		cId.id = new ObjectId();
 		cId.type = "banker";
 
-        UsesCustomIdObject objWithCustomId = new UsesCustomIdObject();
-        objWithCustomId.id = cId;
-        objWithCustomId.text = "hello world";
+		UsesCustomIdObject objWithCustomId = new UsesCustomIdObject();
+		objWithCustomId.id = cId;
+		objWithCustomId.text = "hello world";
 
 		ReferencesCustomId obj = new ReferencesCustomId();
 		obj.id = "testId";
-        obj.child = objWithCustomId;
+		obj.child = objWithCustomId;
 
 		ds.save(objWithCustomId);
 		ds.save(obj);
+
+		ReferencesCustomId reObj = ds.get(ReferencesCustomId.class, obj.id);
+
+		Assert.assertEquals(reObj.child.text, objWithCustomId.text);
+		Assert.assertEquals(reObj.child.id, objWithCustomId.id);
 	}
 
 }
