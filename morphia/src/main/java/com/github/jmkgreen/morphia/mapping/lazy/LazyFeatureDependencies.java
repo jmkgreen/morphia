@@ -32,6 +32,8 @@ public class LazyFeatureDependencies {
                     && Class.forName("com.thoughtworks.proxy.toys.hotswap.HotSwapping") != null;
         } catch (ClassNotFoundException e) {
             fullFilled = false;
+        } catch (LinkageError e) {
+            fullFilled = false;
         }
         return fullFilled;
     }
