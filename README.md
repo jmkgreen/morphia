@@ -1,3 +1,15 @@
+### This Project Has Moved
+
+Please be aware that this fork has been officially superceded by one driven by MongoDB, Inc.
+
+As a consequence this fork is really not needed. You are strongly encouraged to adopt https://github.com/mongodb/morphia instead.
+
+Bugs and improvements should be submitted to that project.
+
+This project will remain here but not actively maintained.
+
+Once again, please visit https://github.com/mongodb/morphia from now on.
+
 ### Basic Introduction
 
 Morphia provides an annotation-driven approach to mapping POJO based entities into and out of MongoDB. As such, Morphia is an ODM (or Object Document Mapper).
